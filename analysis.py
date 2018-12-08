@@ -1,7 +1,7 @@
 #! /usr/bin/python3.6
 # -*-coding:utf-8 -*-
 
-import jieba
+import jieba.analyse
 import pymongo
 from collections import Counter
 import numpy as np
@@ -25,18 +25,19 @@ def analysis(db_name, collection_name):
 
     #获取所有数据，返回的为一个迭代器
     results = jianshu.find()
-
+    #计数器
     counter = Counter()
+
+    #停用词表
+    jieba.analyse.set_stop_words('./chinese_stop_words.txt')
 
     for result in results:
         text = result['text']
-        #分词处理
-        seg_list = jieba.cut(text, cut_all = False)
+        tags = jieba.analyse.extract_tags(text, withWeight = True)
+        #tags = jieba.analyse.extract_tags(text, topK = 100, withWeight = True)
 
-        for word in seg_list:
-            #添加前先清洗
-            if word not in config.bad_words:
-                counter[word] += 1
+        for item in tags:
+            counter[item[0]] += item[1]
 
     return counter
 
